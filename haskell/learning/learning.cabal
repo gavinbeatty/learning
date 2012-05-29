@@ -1,0 +1,109 @@
+Name:           learning
+Version:        0.1
+License:        GPL
+License-File:   LICENSE
+Author:         Gavin Beatty
+Synopsis:       Small package I used to learn haskell
+Build-Depends:  base>=1.0, haskell98>=1.0
+extra-source-files: README, LICENSE
+
+Executable:     hello
+Main-Is:        hello.hs
+
+Executable:     fac
+Main-Is:        fac.hs
+ghc-options:    -O
+
+Executable:     my_length
+Main-Is:        my_length.hs
+ghc-options:    -O
+
+Executable:     pow
+Main-Is:        pow.hs
+ghc-options:    -O
+
+Executable:     fib
+Main-Is:        fib.hs
+ghc-options:    -O
+
+Executable:     mult
+Main-Is:        mult.hs
+ghc-options:    -O
+
+Executable:     import_tute
+Main-Is:        import_tute.hs
+ghc-options:    -O
+
+Executable:     io
+Main-Is:        io.hs
+ghc-options:    -O
+
+Executable:     fib2
+Main-Is:        fib2.hs
+ghc-options:    -O
+
+Executable:     min
+Main-Is:        min.hs
+ghc-options:    -O
+
+Executable:     char
+Main-Is:        char.hs
+ghc-options:    -O
+
+Executable:     float
+Main-Is:        float.hs
+ghc-options:    -O
+
+Executable:     list
+Main-Is:        list.hs
+ghc-options:    -O
+
+Executable:     library
+Main-Is:        library.hs
+ghc-options:    -O
+
+Executable:     poly
+Main-Is:        poly.hs
+ghc-options:    -O
+
+Executable:     zero
+Main-Is:        zero.hs
+ghc-options:    -O
+
+Executable:     data_tute
+Main-Is:        data_tute.hs
+ghc-options:    -O
+
+Executable:     cps
+Main-Is:        cps.hs
+ghc-options:    -O
+
+Executable:     simpleio
+Main-Is:        simpleio.hs
+ghc-options:    -O
+
+Executable:     simplefileio
+Main-Is:        simplefileio.hs
+ghc-options:    -O
+
+Executable:     cards
+Main-Is:        Main.hs
+ghc-options:    -O
+Hs-Source-Dirs: Cards
+Other-Modules:  Cards
+
+Executable:     pointfree
+Main-Is:        pointfree.hs
+ghc-options:    -O
+
+Executable:     pi
+Main-Is:        pi.hs
+ghc-options:    -O
+
+-- see  http://www.haskell.org/ghc/docs/latest/html/Cabal/authors.html
+-- and also http://en.wikibooks.org/wiki/Haskell/Packaging
+-- for more on how to make haskell packages etc.
+--Executable:     program2
+--Main-Is:        Main.hs
+--Hs-Source-Dirs: prog2
+--Other-Modules:  Utils
