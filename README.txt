@@ -1,5 +1,5 @@
 learning
 ========
 
-Language learning and open source course materials.
+Boring unless you're gavinbeatty. Language learning and open source course materials.
 
