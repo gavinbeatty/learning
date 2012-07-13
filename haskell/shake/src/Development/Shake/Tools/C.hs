@@ -1,7 +1,7 @@
 module Development.Shake.Tools.C(
     ToolChain(..)
   , StageEnum(..)
-  , Argument(..)
+  , Element(..)
   , Pattern
   , Options(..)
   , cIncludes
@@ -28,55 +28,81 @@ data StageEnum = Compile
                | Link
   deriving (Show, Read, Eq, Ord)
 
-data Argument = Includes [FilePath]
-              | Sources [FilePath]
-              | Stage StageEnum
-              | Output FilePath
+data Element = Command FilePath
+             | IncludePath FilePath
+             | LibraryPath FilePath
+             | Library FilePath
+             | Source FilePath
+             | Stage StageEnum
+             | Output FilePath
+             | Options [String]
   deriving (Show, Read, Eq, Ord)
-type Pattern = [Argument]
+type Pattern = [Element]
 
-data Options = Options { toolChain :: ToolChain
-                       , command :: FilePath
-                       , includeDirs :: [FilePath]
-                       , pattern :: Pattern
-                       } deriving (Show, Read, Eq, Ord)
+data Options = SimpleOptions { toolChain :: ToolChain
+                             , compiler :: FilePath
+                             , linker :: FilePath
+                             , includeDirs :: [FilePath]
+                             , libraryDirs :: [FilePath]
+                             , libraries :: [FilePath]
+                             , simplePattern :: Pattern
+                             }
+             | PatternOptions { pattern :: Pattern }
+ deriving (Show, Read, Eq, Ord)
 
 -- | GCC specific!
-argument :: Argument -> [String]
-argument (Includes is) = map ("-I"++) is
-argument (Sources srcs) = srcs
-argument (Stage Compile) = ["-c"]
-argument (Stage Assembly) = ["-S"]
-argument (Stage Preprocessor) = ["-E"]
-argument (Stage Link) = []
-argument (Output o) = ["-o",o]
-
-emptyPattern :: Pattern
-emptyPattern = [Includes [], Stage Compile, Output "", Sources []]
+element :: Element -> [String]
+element (Command c) = [c]
+element (IncludePath idir) = ["-I"++idir]
+element (LibraryPath ldir) = ["-L"++ldir]
+element (Library l) = ["-l"++l]
+element (Source src) = src
+element (Stage Compile) = ["-c"]
+element (Stage Assembly) = ["-S"]
+element (Stage Preprocessor) = ["-E"]
+element (Stage Link) = []
+element (Output o) = ["-o",o]
+element (Options opts) = opts
 
 options :: Options
-options = Options { toolChain=GCC
-                         , command="gcc"
-                         , includeDirs=[]
-                         , pattern=emptyPattern
-                         }
+options = SimpleOptions { toolChain=GCC
+                        , compiler="gcc"
+                        , linker="gcc"
+                        , includeDirs=[]
+                        , libraryDirs=[]
+                        , libraries=[]
+                        , pattern=emptyPattern
+                        }
 
-fillArgument :: Options -> [FilePath] -> FilePath -> Argument -> Argument
-fillArgument (Options {includeDirs=incs}) _ _ (Includes _) = Includes incs
-fillArgument _ srcs _ (Sources _) = Sources srcs
-fillArgument _ _ _ s@(Stage _) = s
-fillArgument _ _ out (Output _) = Output out
+fillElement :: Options -> [FilePath] -> FilePath -> Element -> Element
+fillElement (Options {includeDirs=incs}) _ _ (Includes _) = Includes incs
+fillElement _ srcs _ (Sources _) = Sources srcs
+fillElement _ _ _ s@(Stage _) = s
+fillElement _ _ out (Output _) = Output out
 
 -- | Compile the 'pin' into 'pout' using 'opts'.
-compile :: Options -> FilePath -> FilePath -> Action ()
-compile opts@(Options {toolChain=GCC}) pin pout = do
-  let comm = command opts
-      gcc = if null comm then "gcc" else comm
+-- As a convenience, 'pout' is returned via the 'Action'.
+compile :: Options -> FilePath -> FilePath -> Action FilePath
+compile opts@(SimpleOptions _) = compileSimple opts
+
+compileSimple :: Options -> FilePath -> FilePath -> Action FilePath
+compileSimple opts@(SimpleOptions {toolChain=GCC}) pin pout = do
+  let comp = compiler opts
+      gcc = if null comp then "gcc" else comp
       incs = includeDirs opts
       pat = pattern opts
   pinincs <- cIncludes pin incs
   need $ pin : pinincs
-  let pat' = map (fillArgument opts [pin] pout) pat
-  system' gcc $ concat $ map argument pat'
-compile _ _ _ = undefined
+  let pat' = map (fillElement opts [pin] pout) pat
+  system' gcc $ concat $ map element pat'
+compileSimple _ _ _ = undefined
 
+-- | Link the 'pins' into 'pout' using 'opts'.
+-- As a convenience, 'pout' is returned via the 'Action'.
+link :: Options -> [FilePath] -> FilePath -> Action FilePath
+link opts@(Options {toolChain=GCC}) pins pout = do
+  let ld' = linker opts
+      ld = if null ld' then "gcc" else ld'
+      pat = pattern opts
+  need pins
+link _ _ _ = undefined
