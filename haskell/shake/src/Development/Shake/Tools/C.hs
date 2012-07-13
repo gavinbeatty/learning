@@ -1,19 +1,15 @@
-#!/usr/bin/env runhaskell
-module Main where
+module Development.Shake.Tools.C(
+    ToolChain(..)
+  , StageEnum(..)
+  , Argument(..)
+  , Pattern
+  , Options(..)
+  , cIncludes
+  , options
+  , compile
+  )where
 
-import Data.Maybe
 import Development.Shake
-import System.FilePath
-
-main = shake shakeOptions {shakeVerbosity = Loud} $ do
-    want ["a.out"]
-    "a.out" *> \out -> do
-        cs <- getDirectoryFiles "." "*.c"
-        let objs = map (++".o") cs
-        need objs
-        system' "gcc" $ ["-o",out] ++ objs
-    "*.c.o" *> \out -> do
-        compile (defaultOptions {includeDirs=["."]}) (dropExtension out) out
 
 cIncludes :: FilePath -> [FilePath] -> Action [FilePath]
 cIncludes x ipaths = do
@@ -58,15 +54,15 @@ argument (Output o) = ["-o",o]
 emptyPattern :: Pattern
 emptyPattern = [Includes [], Stage Compile, Output "", Sources []]
 
-defaultOptions :: Options
-defaultOptions = Options { toolChain=GCC
+options :: Options
+options = Options { toolChain=GCC
                          , command="gcc"
                          , includeDirs=[]
                          , pattern=emptyPattern
                          }
 
 fillArgument :: Options -> [FilePath] -> FilePath -> Argument -> Argument
-fillArgument opts@(Options {includeDirs=incs}) _ _ (Includes _) = Includes incs
+fillArgument (Options {includeDirs=incs}) _ _ (Includes _) = Includes incs
 fillArgument _ srcs _ (Sources _) = Sources srcs
 fillArgument _ _ _ s@(Stage _) = s
 fillArgument _ _ out (Output _) = Output out
@@ -82,4 +78,5 @@ compile opts@(Options {toolChain=GCC}) pin pout = do
   need $ pin : pinincs
   let pat' = map (fillArgument opts [pin] pout) pat
   system' gcc $ concat $ map argument pat'
+compile _ _ _ = undefined
 

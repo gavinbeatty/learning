@@ -1,0 +1,55 @@
+cabal-version:      >= 1.8
+build-type:         Simple
+name:               shake-tools
+version:            0.3
+license:            BSD3
+license-file:       LICENSE
+category:           Development
+author:             Gavin Beatty <gavinbeatty@gmail.com>
+maintainer:         Gavin Beatty <gavinbeatty@gmail.com>
+copyright:          Gavin Beatty 2012
+synopsis:           Defined actions for various tools such as C compilers.
+description:
+    A simple but flexible interface for building files from source. Supported
+    inputs are: C source.
+    .
+    Using these actions should make writing Shake files comparable with, say,
+    boost-build.
+homepage:           http://github.com/gavinbeatty/shake-tools
+stability:          Alpha
+
+source-repository head
+    type:     git
+    location: http://github.com/gavinbeatty/shake-tools.git
+
+flag test
+    default: False
+    description: Build the tests
+
+library
+    ghc-options: -O2 -Wall
+    if impl(ghc >= 7.0.1)
+        ghc-prof-options: -auto-all -caf-all -rtsopts
+    else
+        ghc-prof-options: -auto-all -caf-all
+
+    hs-source-dirs: src
+
+    build-depends:
+        base == 4.*,
+        shake >= 0.3
+
+    exposed-modules:
+        Development.Shake.Tools.C
+
+
+executable shake-tools-tests
+    main-is: test/Main.hs
+    if flag(test)
+        buildable: True
+    else
+        buildable: False
+    build-depends:
+        base == 4.*,
+        shake >= 0.3
+
