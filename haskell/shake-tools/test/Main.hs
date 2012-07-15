@@ -2,6 +2,8 @@
 
 module Main where
 import System.IO( putStrLn )
+import Development.Shake
+import Development.Shake.Tools.C
 
 main = shake shakeOptions $ do
     want ["a.out"]
